@@ -16,7 +16,7 @@ router.get('/health-check', (req, res) =>{
             msg: 'success',
             payload: "",
           });
-    
+
         }catch (e){
             //return res with this format if fail
             console.log(e);
@@ -29,9 +29,10 @@ router.get('/health-check', (req, res) =>{
 });
 
 
-//import different 
+//import different
 router.route('/UserRegister').post(asyncHandler(UserController.UserRegister));
 router.route('/UserHealthCheck').get(asyncHandler(UserController.UserHealthCheck));
+router.route('/GetUser').post(asyncHandler(UserController.GetUser));
 
 
 

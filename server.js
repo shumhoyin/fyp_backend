@@ -9,6 +9,7 @@ const Router = require('./routes/index.route');
 //default server port
 const Port = process.env.Port || 3000;
 
+//connect database
     ConnectDB();
 
     app.use(express.json({ extended: false }));
@@ -18,4 +19,7 @@ const Port = process.env.Port || 3000;
     app.use('/api', Router);
 
 
-app.listen(Port, () => console.log('Server started'));
+app.listen(Port, () => {
+    console.log('Server started');
+    console.log('Server Listening port 3000');
+});
