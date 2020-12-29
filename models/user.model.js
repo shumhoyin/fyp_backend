@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const UserSchema = new mongoose.Schema({
-username: {
+userName: {
         type: String,
         required: true,
         unique: true,
@@ -10,21 +10,13 @@ username: {
     type: String,
     required: true,
     unique:true,
-    // Regexp to validate emails 
+    // Regexp to validate emails
     match: [/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 'Please enter a valid email'],
   },
-  hashedPassword: {
+  userPassword: {
     type: String,
     required: true
   },
-//   role: {
-//     type: Number,
-//     required: true
-//   },
-//   status: {
-//     type: Number,
-//     required: true
-//   },
   firstName: {
     type: String,
     required: true
@@ -32,6 +24,11 @@ username: {
   lastName: {
     type: String,
     required: true
+  },
+  userIcon:{
+    type: String,
+    required:true,
+    default: 'this is a user image location path'
   },
   createdAt: {
     type: Date,

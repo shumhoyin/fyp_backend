@@ -28,23 +28,12 @@ async function UserHealthCheck(req, res) {
 }
 
 async function UserRegister(req, res) {
-  const { email, username, hashedPassword, firstname, lastname } = req.body;
-
-  let user = {};
-  user.username = username;
-  user.email = email;
-  user.hashedPassword = hashedPassword;
-  user.firstName = firstname;
-  user.lastName = lastname;
-
-  console.log(user);
+  console.log(req.body);
 
   try {
-    let userModel = new User(user);
+    let userModel = new User(req.body);
     await userModel.save();
-    console.log("rescode = " + res.resCode);
     console.log("rescode = " + res.statusCode);
-
     //return res with this format if succes
     res.setHeader('Access-Control-Allow-Origin', '*');
     return res.json({
@@ -73,12 +62,8 @@ async function GetUser(req, res) {
   console.log('inside get user');
 
   try {
-
-
-
-
     //Checking the database for the user
-    User.findOne({'username':username,hashedPassword:hashedPassword},function(err,user){
+    User.findOne({'username':username,userPassword:userPassword},function(err,user){
 
       //if cannot find the user
       if(err || !user){

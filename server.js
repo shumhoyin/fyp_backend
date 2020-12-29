@@ -7,7 +7,7 @@ const ConnectDB = require('./DBConnection');
 const Router = require('./routes/index.route');
 
 //default server port
-const Port = process.env.Port || 3000;
+const Port = process.env.Port || 3001;
 
 //connect database
     ConnectDB();
