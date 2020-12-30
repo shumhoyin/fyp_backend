@@ -22,7 +22,6 @@
     <list default="true" id="1d4e3a1e-450b-4a53-af30-46abe352e6e8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controllers/user.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/user.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/user.model.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/user.model.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,6 +55,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path" value="node" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
@@ -75,7 +75,7 @@
       <workItem from="1609055505686" duration="791000" />
       <workItem from="1609056479851" duration="9453000" />
       <workItem from="1609079453284" duration="1288000" />
-      <workItem from="1609233305016" duration="2319000" />
+      <workItem from="1609233305016" duration="6698000" />
     </task>
     <servers />
   </component>
@@ -99,6 +99,10 @@
       <screen x="0" y="23" width="1440" height="823" />
     </state>
     <state x="198" y="125" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1440.823@0.23.1440.823" timestamp="1605519991869" />
+    <state x="221" y="122" key="SettingsEditor" timestamp="1609236739884">
+      <screen x="0" y="23" width="1440" height="823" />
+    </state>
+    <state x="221" y="122" key="SettingsEditor/0.23.1440.823@0.23.1440.823" timestamp="1609236739884" />
     <state x="562" y="-676" width="670" height="676" key="search.everywhere.popup" timestamp="1609061647499">
       <screen x="0" y="-1057" width="1920" height="1057" />
     </state>

@@ -58,12 +58,12 @@ res.setHeader('Access-Control-Allow-Origin', '*');
 //GetUser is a function for login
 //trying
 async function GetUser(req, res) {
-  const { username, hashedPassword } = req.body;
-  console.log('inside get user');
+  const { userName, userPassword } = req.body;
+  console.log(req.body);
 
   try {
     //Checking the database for the user
-    User.findOne({'username':username,userPassword:userPassword},function(err,user){
+    User.findOne({'userName':userName,'userPassword':userPassword},function(err,user){
 
       //if cannot find the user
       if(err || !user){
@@ -80,12 +80,20 @@ async function GetUser(req, res) {
       if (user){
         console.log("登入成功！");
 
+        let data = {
+          firstName : user.firstName,
+          lastName: user.lastName,
+          userName:user.userName,
+          email: user.email,
+          createdAt: user.createdAt
+        }
+
         //return res with this format if succes
         res.setHeader('Access-Control-Allow-Origin', '*');
         return res.json({
           resCode: 1,
           msg: "success",
-          payload: '',
+          payload: data,
         });
 
 
