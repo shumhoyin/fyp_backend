@@ -21,7 +21,6 @@
   <component name="ChangeListManager">
     <list default="true" id="1d4e3a1e-450b-4a53-af30-46abe352e6e8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/user.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/user.controller.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -60,6 +59,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/public/locationImg" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
@@ -75,7 +75,7 @@
       <workItem from="1609055505686" duration="791000" />
       <workItem from="1609056479851" duration="9453000" />
       <workItem from="1609079453284" duration="1288000" />
-      <workItem from="1609233305016" duration="6698000" />
+      <workItem from="1609233305016" duration="8248000" />
     </task>
     <servers />
   </component>

@@ -18,6 +18,10 @@ const Port = process.env.Port || 3001;
     //route all the api to Router
     app.use('/api', Router);
 
+    //setting a static path such that client can access all the static things inside the server
+//public is the root folder
+//localhost:3001/locationImg/xxx.jpg
+    app.use(express.static('public'));
 
 app.listen(Port, () => {
     console.log('Server started');
