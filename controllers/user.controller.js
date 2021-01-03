@@ -81,6 +81,7 @@ async function GetUser(req, res) {
         console.log("登入成功！");
 
         let data = {
+          _id:user._id,
           firstName : user.firstName,
           lastName: user.lastName,
           userName:user.userName,

@@ -1,8 +1,9 @@
 const express = require('express');
 const userRoutes = require('./user.route');
+const locationRoutes = require('./location.route');
 
 
-const router = express.Router(); 
+const router = express.Router();
 
 /** GET /health-check - Check service health */
 router.get('/health-check', (req, res) =>{
@@ -11,14 +12,14 @@ router.get('/health-check', (req, res) =>{
 
         console.log("inside index.route");
 
-        //return res with this format if succes
+        //return res with this format if success
         res.setHeader('Access-Control-Allow-Origin', '*');
         return  res.json({
             resCode: 1,
             msg: 'success',
             payload: "",
           });
-    
+
         }catch (e){
             //return res with this format if fail
             console.log(e);
@@ -30,8 +31,9 @@ router.get('/health-check', (req, res) =>{
         }
 });
 
-//user related 
+//user related
 router.use('/User', userRoutes);
+router.use('/Location', locationRoutes);
 
 
 module.exports = router;
