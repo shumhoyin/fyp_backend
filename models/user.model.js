@@ -40,4 +40,4 @@ userName: {
   }
 });
 
-module.exports = mongoose.model('user_info', UserSchema);
+module.exports = mongoose.model('user_infos', UserSchema);

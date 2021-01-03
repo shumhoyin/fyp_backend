@@ -1,12 +1,8 @@
 const mongoose = require('mongoose')
 
 const LocationSchema = new mongoose.Schema({
-    id: {
-        type: Number,
-        required: true,
-        unique: true,
-    },
-    title: {
+
+    locationName: {
         type: String,
         required: true,
     },
@@ -18,8 +14,24 @@ const LocationSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    type:{
+        type:String,
+        required:true
+    },
     image: {
         type: String,
+        required: true,
+        default: "http://localhost:3001/locationImg/test.jpg",
+    },
+    uploadedBy:{
+        type: mongoose.Schema.Types.ObjectID,
+        ref:'user_infos',
+        required: true
+
+    },
+    locationDetail:{
+        type: mongoose.Schema.Types.ObjectID,
+        ref:'location_details',
         required: true
     },
     createdAt: {
@@ -28,4 +40,4 @@ const LocationSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model('location_info', LocationSchema);
+module.exports = mongoose.model('locations', LocationSchema);
