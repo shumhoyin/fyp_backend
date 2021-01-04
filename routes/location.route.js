@@ -9,6 +9,8 @@ const LocationController = require ('../controllers/location.controller');
 router.route('/LocationHealthCheck').get(asyncHandler(LocationController.LocationHealthCheck));
 router.route('/ShareLocation').post(asyncHandler(LocationController.ShareLocation));
 router.route('/GetAll').get(asyncHandler(LocationController.GetLocation));
+router.route('/GiveComment').post(asyncHandler(LocationController.GiveComment));
+router.route('/GetDetail').get(asyncHandler(LocationController.GetDetail));
 
 
 

@@ -55,27 +55,77 @@ async function ShareLocation(req,res){
 
 
 async function GetLocation(req, res) {
-    let result = '';
-    await Location.find().populate("uploadedBy").then(res=>{
-    result  = res;
+
+    Location.find().populate("uploadedBy").then(response=>{
+
+        //return res with this format if success
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        return res.json({
+            resCode: 1,
+            msg: "success",
+            payload: response
+        })
         });
 
-    // title: 'Curry',
-    //     latitude: 37.79489,
-    //     longitude: -122.4596065,
-    //     image: require('../../assets/images/samplephoto/testphoto5.jpg'),
 
 
+}
+
+
+async function GiveComment(req, res) {
+    console.log(req.body)
+    const {detailId,data, uploadedBy} = req.body;
+
+    const configed = {
+        uploadedBy:uploadedBy,
+        content:data,
+    }
+
+
+    new Comments(configed).save().then((res) => {
+        LocationDetail.findByIdAndUpdate(
+            detailId,
+            { $push: { comments: res._id } },
+            { new: true, useFindAndModify: false }
+        ).then((res) => {
+            console.log("123");
+        });
+    });
 
     //return res with this format if success
     res.setHeader('Access-Control-Allow-Origin', '*');
     return res.json({
         resCode: 1,
         msg: "success",
-        payload: result
+        payload: ''
     })
 
 }
 
+async function GetDetail(req, res){
+
+    LocationDetail.findById("5ff1a6cfc9a1442dd83350f7").populate('comments').then(response=>{
+            //can find with this id
+            //return res with this format if success
+            console.log(response);
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            return res.json({
+                resCode: 1,
+                msg: "success",
+                payload: response
+            })
+
+
+        })
+        .catch(err=>{
+            //cannot find with this id
+            console.log()
+        })
+
+
+}
+
+
+
 //export module of Location
-module.exports = { LocationHealthCheck,GetLocation,ShareLocation};
+module.exports = { GetDetail,GiveComment,LocationHealthCheck,GetLocation,ShareLocation};
