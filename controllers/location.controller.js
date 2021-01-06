@@ -103,11 +103,15 @@ async function GiveComment(req, res) {
 }
 
 async function GetDetail(req, res){
+    const tarId = req.query.LocationId;
 
-    LocationDetail.findById("5ff1a6cfc9a1442dd83350f7").populate('comments').then(response=>{
+    Location.findById(tarId).populate({path:'uploadedBy',select:'userName'})
+        .populate({path:'locationDetail',populate:{path:'comments',populate:{path: 'uploadedBy',select: 'userName'}}})
+        .then(response=>{
             //can find with this id
             //return res with this format if success
             console.log(response);
+
             res.setHeader('Access-Control-Allow-Origin', '*');
             return res.json({
                 resCode: 1,
