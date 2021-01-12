@@ -2,6 +2,9 @@ const Location = require("../models/location.model");
 const LocationDetail = require("../models/locationDetail.model")
 const Comments = require("../models/comment.model")
 
+const multer = require("multer")
+const fs = require("fs")
+
 
 async function LocationHealthCheck(req, res) {
     try {
@@ -26,29 +29,68 @@ async function LocationHealthCheck(req, res) {
 }
 
 async function ShareLocation(req,res){
-    console.log(req.body);
-    const {description , uploadedBy} = req.body
-    console.log(description);
-    console.log(uploadedBy);
-    let locationInfo = req.body;
-    delete locationInfo.description;
 
-    let tmp1 = await new LocationDetail({
-        description:description,
-        uploadedBy:uploadedBy
-    }).save();
-
-    console.log(tmp1)
-    console.log('finish save in LocationDetail');
-    locationInfo = {...locationInfo,locationDetail:tmp1._id}
-    console.log(locationInfo);
-   let result = await new Location(locationInfo).save();
-    res.json({
-        resCode: 1,
-        messgae: 'success',
-        payload: result,
+    //accept the message using form data format
+    //config of local storage
+    const storage = multer.diskStorage({
+        //storage location path
+        destination: (req,file,callback)=>{
+            callback(null,'public/locationImg')
+        },
+        //the fomatted filename
+        filename:(req,file,callback)=>{
+            callback(null,Date.now()+'_'+ file.originalname)
+        }
     })
 
+    //only accept single file with "file" header
+    const upload = multer({storage : storage}).single("file");
+
+    //upload method that accept the data in formdata header
+    upload(req,res,(err)=>{
+        //if faced error, return err
+        if(err){
+            res.json({
+                resCode: 0,
+                messgae: 'failure',
+                payload: err.message
+            })
+        }
+        console.log(req.body.file)
+        console.log(JSON.parse(req.body.data))
+
+
+        //if no error do the following stuff
+
+
+        // let locationInfo = JSON.parse(req.body.data);
+        //
+        // const {description , uploadedBy} = locationInfo;
+        // console.log(description);
+        // console.log(uploadedBy);
+        // console.log(locationInfo);
+        // delete locationInfo.description;
+        //
+        //
+        //  let tmp1 = new LocationDetail({
+        //      description:description,
+        //      uploadedBy:uploadedBy
+        //  }).save();
+        //
+        //  console.log(tmp1)
+        //  console.log('finish save in LocationDetail');
+        //  let imagePath = "http://localhost:3001/public/locationImg/" + req.file.filename;
+        //  locationInfo = {...locationInfo,locationDetail:tmp1._id,image:imagePath}
+        //  console.log(locationInfo);
+        //  let result = new Location(locationInfo).save();
+        //  res.json({
+        //      resCode: 1,
+        //      messgae: 'success',
+        //      payload: result,
+        //  })
+
+
+    })
 
 }
 
