@@ -30,6 +30,12 @@ userName: {
     required:true,
     default: 'this is a user image location path'
   },
+  favouriteList:[
+    {
+      type:mongoose.Schema.Types.ObjectId,
+      ref:'locations',
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now

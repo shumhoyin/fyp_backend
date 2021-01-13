@@ -33,7 +33,8 @@ router.get('/health-check', (req, res) =>{
 router.route('/UserRegister').post(asyncHandler(UserController.UserRegister));
 router.route('/UserHealthCheck').get(asyncHandler(UserController.UserHealthCheck));
 router.route('/GetUser').post(asyncHandler(UserController.GetUser));
-
+router.route('/AddToFavouriteList').post(asyncHandler(UserController.AddToFavouriteList));
+router.route('/GetUserFavouriteList').get(asyncHandler(UserController.GetUserFavouriteList));
 
 
 

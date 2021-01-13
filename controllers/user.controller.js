@@ -115,5 +115,40 @@ async function GetUser(req, res) {
   }
 }
 
+async function AddToFavouriteList(req,res){
+  console.log(req.body)
+
+  const {user_id, location_id} = req.body;
+
+    User.findByIdAndUpdate(
+        user_id,
+        { $push: { favouriteList: location_id } },
+        { new: true, useFindAndModify: false }
+    ).then((res) => {
+      console.log(res);
+    });
+
+}
+
+
+async function GetUserFavouriteList(req,res) {
+  const tarId = req.query.user_id;
+
+  User.findById(tarId).populate('favouriteList').select('favouriteList')
+      .then(response=>{
+        console.log(rßesponse.favouriteList)
+        res.send({
+          resCode:1,
+          message:"success",
+          payload:response.favouriteList
+        })
+      })
+      .catch( err  => {
+    console.log(err.message)
+  })
+}
+
+
+
 //export module of User
-module.exports = { UserHealthCheck, UserRegister ,GetUser};
+module.exports = { UserHealthCheck, UserRegister ,GetUser,AddToFavouriteList,GetUserFavouriteList};
