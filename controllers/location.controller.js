@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const Location = require("../models/location.model");
 const LocationDetail = require("../models/locationDetail.model")
 const Comments = require("../models/comment.model")
@@ -28,6 +29,7 @@ async function LocationHealthCheck(req, res) {
     }
 }
 
+//not finish
 async function ShareLocation(req,res){
 
     //accept the message using form data format
@@ -44,7 +46,7 @@ async function ShareLocation(req,res){
     })
 
     //only accept single file with "file" header
-    const upload = multer({storage : storage}).single("file");
+    const upload = multer({storage : storage,limits: { fieldSize: 2 * 1024 * 1024 }}).single("file");
 
     //upload method that accept the data in formdata header
     upload(req,res,(err)=>{
@@ -57,7 +59,7 @@ async function ShareLocation(req,res){
             })
         }
         console.log(req.body.file)
-        console.log(JSON.parse(req.body.data))
+        // console.log(JSON.parse(req.body.data))
 
 
         //if no error do the following stuff
@@ -98,16 +100,29 @@ async function ShareLocation(req,res){
 
 async function GetLocation(req, res) {
 
-    Location.find().populate("uploadedBy").then(response=>{
+    const condition = req.query.condition;
 
-        //return res with this format if success
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        return res.json({
-            resCode: 1,
-            msg: "success",
-            payload: response
-        })
-        });
+
+    if(condition){
+        //if it is a condition search
+        console.log(123 + condition)
+    }else{
+        //if it is not a condition search
+        //fetch all the place
+        Location.find().populate("uploadedBy").lean().then(response=>{
+
+            //return res with this format if success
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            return res.json({
+                resCode: 1,
+                msg: "success",
+                payload: response
+            })
+            });
+    }
+
+
+
 
 
 
@@ -147,11 +162,18 @@ async function GiveComment(req, res) {
 async function GetDetail(req, res){
     const tarId = req.query.LocationId;
 
+
     Location.findById(tarId).populate({path:'uploadedBy',select:'userName'})
-        .populate({path:'locationDetail',populate:{path:'comments',populate:{path: 'uploadedBy',select: 'userName'}}})
+        .populate({path:'locationDetail',populate:{path:'comments',populate:{path: 'uploadedBy',select: 'userName'}}}).lean()
         .then(response=>{
             //can find with this id
             //return res with this format if success
+
+            const numOfLike = response.locationDetail.like.length
+            const numOfDislike = response.locationDetail.dislike.length
+
+            response.locationDetail.like = numOfLike;
+            response.locationDetail.dislike = numOfDislike;
             console.log(response);
 
             res.setHeader('Access-Control-Allow-Origin', '*');
@@ -172,6 +194,176 @@ async function GetDetail(req, res){
 }
 
 
+async function GiveLike(req,res){
+    const {detailId , user_id} =req.body;
+    // console.log(req.body)
+    let result = await LocationDetail.findById(detailId).lean()
+
+    let likeList = result.like;
+    let dislikeList = result.dislike;
+
+    // if the user already inside the  like list
+    if(likeList.includes(user_id)) {
+        console.log("have")
+        res.json({
+            resCode: 0,
+            message: "already inside like",
+            payload: "already inside like"
+        })
+    }else{
+        // if the user not inside the like list
+        console.log("doesnt have")
+
+        //if user is inside the dislike list --> 1) remove the name inside the dislike list and 2) add to like list
+        //else
+        //1) add to like list
+
+        if(dislikeList.includes(user_id)){
+            //remove the name inside the dislike list
+            await LocationDetail.findByIdAndUpdate(
+                detailId,
+                { $pull: { dislike: user_id } },
+                { new: true, useFindAndModify: false }
+            )
+
+
+            //add the name inside the like list
+            await LocationDetail.findByIdAndUpdate(
+                detailId,
+                { $push: { like: user_id } },
+                { new: true, useFindAndModify: false }
+            )
+
+            //return new info to frontend
+            let updatedInfo = await LocationDetail.findById(detailId).lean()
+
+            const numOfLike = updatedInfo.like.length
+            const numOfDislike = updatedInfo.dislike.length
+
+            res.json({
+                resCode: 1,
+                message: "in dislike list and added to like list",
+                payload: {
+                    like: numOfLike,
+                    dislike: numOfDislike
+                }
+            })
+
+
+        }else{
+            let result2 = await LocationDetail.findByIdAndUpdate(
+                detailId,
+                { $push: { like: user_id } },
+                { new: true, useFindAndModify: false }
+            )
+
+            //return new info to frontend
+            let updatedInfo = await LocationDetail.findById(detailId).lean()
+
+            const numOfLike = updatedInfo.like.length
+            const numOfDislike = updatedInfo.dislike.length
+
+            res.json({
+                resCode: 1,
+                message: "not in dislike list and added to like list",
+                payload: {
+                    like: numOfLike,
+                    dislike:numOfDislike
+
+                }
+            })
+        }
+
+    }
+
+
+}
+
+
+async function GiveDislike(req,res){
+    const {detailId , user_id} = req.body;
+    // console.log(req.body)
+    let result = await LocationDetail.findById(detailId).select("like dislike -_id").lean()
+
+    let likeList = result.like;
+    let dislikeList = result.dislike;
+
+    // if the user already inside the  like list
+    if(dislikeList.includes(user_id)) {
+        console.log("have")
+        res.json({
+            resCode: 0,
+            message: "already inside dislike list",
+            payload: "already inside dislike list"
+        })
+    }else{
+        // if the user not inside the dislike list
+        console.log("doesnt have")
+
+        //if user is inside the dislike list --> 1) remove the name inside the dislike list and 2) add to like list
+        //else
+        //1) add to like list
+
+        if(likeList.includes(user_id)){
+            //remove the name inside the like list
+            await LocationDetail.findByIdAndUpdate(
+                detailId,
+                { $pull: { like: user_id } },
+                { new: true, useFindAndModify: false }
+            )
+
+
+            //add the name inside the dislike list
+            await LocationDetail.findByIdAndUpdate(
+                detailId,
+                { $push: { dislike: user_id } },
+                { new: true, useFindAndModify: false }
+            )
+
+            //return new info to frontend
+            let updatedInfo = await LocationDetail.findById(detailId).lean()
+
+            const numOfLike = updatedInfo.like.length
+            const numOfDislike = updatedInfo.dislike.length
+
+            res.json({
+                resCode: 1,
+                message: "in like list and added to dislike list",
+                payload: {
+                    like: numOfLike,
+                    dislike: numOfDislike
+                }
+            })
+
+
+        }else{
+            let result2 = await LocationDetail.findByIdAndUpdate(
+                detailId,
+                { $push: { dislike: user_id } },
+                { new: true, useFindAndModify: false }
+            )
+
+            //return new info to frontend
+            let updatedInfo = await LocationDetail.findById(detailId).lean()
+
+            const numOfLike = updatedInfo.like.length
+            const numOfDislike = updatedInfo.dislike.length
+
+            res.json({
+                resCode: 1,
+                message: "not in dislike list and added to dislike list",
+                payload: {
+                    like: numOfLike,
+                    dislike:numOfDislike
+
+                }
+            })
+        }
+
+    }
+
+
+}
 
 //export module of Location
-module.exports = { GetDetail,GiveComment,LocationHealthCheck,GetLocation,ShareLocation};
+module.exports = { GetDetail,GiveComment,LocationHealthCheck,GetLocation,ShareLocation, GiveLike, GiveDislike};

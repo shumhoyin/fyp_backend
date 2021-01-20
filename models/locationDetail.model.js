@@ -5,14 +5,18 @@ const LocationDetailSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    like: {
-        type: Number,
-        default: 0,
-    },
-    dislike: {
-        type: Number,
-        default: 0,
-    },
+    like: [
+        {
+            type: String,
+            unique:true
+        }
+    ],
+    dislike: [
+        {
+            type: String,
+            unique:true
+        }
+    ],
     comments:[
         {
             type:mongoose.Schema.Types.ObjectId,
