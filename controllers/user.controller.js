@@ -134,18 +134,19 @@ async function AddToFavouriteList(req,res){
 async function GetUserFavouriteList(req,res) {
   const tarId = req.query.user_id;
 
+
   User.findById(tarId).populate('favouriteList').select('favouriteList')
       .then(response=>{
-        console.log(rßesponse.favouriteList)
+        console.log(response.favouriteList)
         res.send({
           resCode:1,
           message:"success",
           payload:response.favouriteList
         })
       })
-      .catch( err  => {
-    console.log(err.message)
-  })
+  //     .catch( err  => {
+  //   console.log(err.message)
+  // })
 }
 
 
