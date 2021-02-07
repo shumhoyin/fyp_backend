@@ -1,7 +1,3 @@
-const express = require("express");
-
-const mongoose = require("mongoose");
-
 const User = require("../models/user.model");
 
 
@@ -134,19 +130,30 @@ async function AddToFavouriteList(req,res){
 async function GetUserFavouriteList(req,res) {
   const tarId = req.query.user_id;
 
+  let result  = await User.findById(tarId).populate({path:'favouriteList',populate:{path:'uploadedBy locationDetail',select:'-userPassword'}}).lean()
+  result = result.favouriteList;
 
-  User.findById(tarId).populate('favouriteList').select('favouriteList')
-      .then(response=>{
-        console.log(response.favouriteList)
-        res.send({
-          resCode:1,
-          message:"success",
-          payload:response.favouriteList
-        })
-      })
-  //     .catch( err  => {
-  //   console.log(err.message)
-  // })
+  for (const obj in result){
+    console.log(result[obj])
+    Object.keys(result[obj].locationDetail).forEach(
+        key=>{
+          if(key ==='like' || key==="dislike"){
+            console.log(result[obj].locationDetail[key]);
+            let num = result[obj].locationDetail[key].length;
+            result[obj].locationDetail[key] = num;
+          }
+        }
+    )
+  }
+
+  console.log(result)
+
+  res.send({
+    resCode:1,
+    message:"success",
+    payload:result
+  })
+
 }
 
 

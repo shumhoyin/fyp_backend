@@ -32,7 +32,7 @@ async function LocationHealthCheck(req, res) {
 //not finish
 async function ShareLocation(req,res){
 
-    //accept the message using form data format
+/*    //accept the message using form data format
     //config of local storage
     const storage = multer.diskStorage({
         //storage location path
@@ -59,40 +59,58 @@ async function ShareLocation(req,res){
             })
         }
         console.log(req.body.file)
-        // console.log(JSON.parse(req.body.data))
+        // console.log(JSON.parse(req.body.data))*/
 
 
-        //if no error do the following stuff
 
 
-        // let locationInfo = JSON.parse(req.body.data);
-        //
-        // const {description , uploadedBy} = locationInfo;
-        // console.log(description);
-        // console.log(uploadedBy);
-        // console.log(locationInfo);
-        // delete locationInfo.description;
-        //
-        //
-        //  let tmp1 = new LocationDetail({
-        //      description:description,
-        //      uploadedBy:uploadedBy
-        //  }).save();
-        //
-        //  console.log(tmp1)
-        //  console.log('finish save in LocationDetail');
-        //  let imagePath = "http://localhost:3001/public/locationImg/" + req.file.filename;
-        //  locationInfo = {...locationInfo,locationDetail:tmp1._id,image:imagePath}
-        //  console.log(locationInfo);
-        //  let result = new Location(locationInfo).save();
-        //  res.json({
-        //      resCode: 1,
-        //      messgae: 'success',
-        //      payload: result,
-        //  })
+
+       // let locationInfo = JSON.parse(req.body.data);
+        console.log(req.body)
+
+    //tmp only
+    let locationInfo = req.body;
+        const {description , uploadedBy,latitude,longitude} = locationInfo;
+
+        console.log(description);
+        console.log(uploadedBy);
+
+        let cleanedFormat = {
+            type: 'Point',
+                coordinates: [longitude,latitude]
+        }
+
+        delete locationInfo.description;
+        delete locationInfo.latitude;
+        delete locationInfo.longitude;
 
 
-    })
+
+
+         let tmp1 = await new LocationDetail({
+             description:description,
+             uploadedBy:uploadedBy
+         }).save();
+
+        console.log(tmp1._id)
+         console.log('finish save in LocationDetail');
+         //this is default image only
+         let imagePath = "http://localhost:3001/locationImg/test.jpg";
+         locationInfo = {...locationInfo,
+             locationDetail:tmp1._id,
+             image:imagePath,
+             location:cleanedFormat
+         }
+         console.log(locationInfo);
+         let result = await new Location(locationInfo).save();
+
+         if(result){
+             res.json({
+                 resCode: 1,
+                 messgae: 'success',
+                 payload: result,
+             })
+         }
 
 }
 
@@ -100,18 +118,42 @@ async function ShareLocation(req,res){
 
 async function GetLocation(req, res) {
 
-    const condition = req.query.condition;
+        let {distance , type, latitude,longitude} = req.query;
 
 
-    if(condition){
-        //if it is a condition search
-        console.log(123 + condition)
-    }else{
+    let Query = JSON.parse(JSON.stringify({
+        location:{
+            $near:{
+                //maxdistance is in "meter"
+                $maxDistance: distance,
+                $geometry:{
+                    type:'Point',
+                    //this is the user location
+                    coordinates: [longitude,latitude]
+                }
+            }
+        },
+        type:type
+    }));
+
+    Object.keys(Query).forEach(
+        key=>{
+            if(Query[key] === ''){
+                delete Query[key];
+            }
+        }
+    )
+    console.log(JSON.stringify(Query))
+
+
         //if it is not a condition search
         //fetch all the place
-        Location.find().populate("uploadedBy").lean().then(response=>{
+        Location.find(Query).populate({path:"uploadedBy",select: '_id userName'}).lean().then(response=>{
 
             //return res with this format if success
+
+            console.log(response)
+
             res.setHeader('Access-Control-Allow-Origin', '*');
             return res.json({
                 resCode: 1,
@@ -119,9 +161,6 @@ async function GetLocation(req, res) {
                 payload: response
             })
             });
-    }
-
-
 
 
 

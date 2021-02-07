@@ -6,13 +6,20 @@ const LocationSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    latitude: {
-        type: Number,
-        required: true
-    },
-    longitude: {
-        type: Number,
-        required: true
+    location:{
+        //this is the data type of the location field
+        type:{
+            type:String,
+            enum:['Point'],
+            required:true,
+            default: 'Point'
+        },
+        coordinates:{
+            //coord will be an array [long , lag]
+            type:[Number],
+            required:true
+        },
+
     },
     type:{
         type:String,
@@ -39,5 +46,5 @@ const LocationSchema = new mongoose.Schema({
         default: Date.now
     },
 });
-
+LocationSchema.index({ location: "2dsphere" });
 module.exports = mongoose.model('locations', LocationSchema);
