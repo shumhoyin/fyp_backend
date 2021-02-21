@@ -68,7 +68,7 @@ async function GetUser(req, res) {
         return res.json({
           resCode: 0,
           msg: "fail",
-          payload:err
+          payload:"Incorrect Username or Password"
         });
       }
 
@@ -84,7 +84,6 @@ async function GetUser(req, res) {
           email: user.email,
           createdAt: user.createdAt
         }
-
         //return res with this format if succes
         res.setHeader('Access-Control-Allow-Origin', '*');
         return res.json({
@@ -93,9 +92,7 @@ async function GetUser(req, res) {
           payload: data,
         });
 
-
       }
-
     });
 
 

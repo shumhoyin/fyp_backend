@@ -31,40 +31,6 @@ async function LocationHealthCheck(req, res) {
 
 //not finish
 async function ShareLocation(req,res){
-
-/*    //accept the message using form data format
-    //config of local storage
-    const storage = multer.diskStorage({
-        //storage location path
-        destination: (req,file,callback)=>{
-            callback(null,'public/locationImg')
-        },
-        //the fomatted filename
-        filename:(req,file,callback)=>{
-            callback(null,Date.now()+'_'+ file.originalname)
-        }
-    })
-
-    //only accept single file with "file" header
-    const upload = multer({storage : storage,limits: { fieldSize: 2 * 1024 * 1024 }}).single("file");
-
-    //upload method that accept the data in formdata header
-    upload(req,res,(err)=>{
-        //if faced error, return err
-        if(err){
-            res.json({
-                resCode: 0,
-                messgae: 'failure',
-                payload: err.message
-            })
-        }
-        console.log(req.body.file)
-        // console.log(JSON.parse(req.body.data))*/
-
-
-
-
-
        // let locationInfo = JSON.parse(req.body.data);
         console.log(req.body)
 
@@ -72,8 +38,7 @@ async function ShareLocation(req,res){
     let locationInfo = req.body;
         const {description , uploadedBy,latitude,longitude} = locationInfo;
 
-        console.log(description);
-        console.log(uploadedBy);
+        console.log(locationInfo);
 
         let cleanedFormat = {
             type: 'Point',
@@ -84,9 +49,6 @@ async function ShareLocation(req,res){
         delete locationInfo.latitude;
         delete locationInfo.longitude;
 
-
-
-
          let tmp1 = await new LocationDetail({
              description:description,
              uploadedBy:uploadedBy
@@ -95,10 +57,8 @@ async function ShareLocation(req,res){
         console.log(tmp1._id)
          console.log('finish save in LocationDetail');
          //this is default image only
-         let imagePath = "http://localhost:3001/locationImg/test.jpg";
          locationInfo = {...locationInfo,
              locationDetail:tmp1._id,
-             image:imagePath,
              location:cleanedFormat
          }
          console.log(locationInfo);
