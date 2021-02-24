@@ -35,6 +35,7 @@ router.route('/UserHealthCheck').get(asyncHandler(UserController.UserHealthCheck
 router.route('/GetUser').post(asyncHandler(UserController.GetUser));
 router.route('/AddToFavouriteList').post(asyncHandler(UserController.AddToFavouriteList));
 router.route('/GetUserFavouriteList').get(asyncHandler(UserController.GetUserFavouriteList));
+router.route('/ChangeUserIcon').post(asyncHandler(UserController.ChangeUserIcon));
 
 
 

@@ -28,7 +28,7 @@ userName: {
   userIcon:{
     type: String,
     required:true,
-    default: 'this is a user image location path'
+    default: null
   },
   favouriteList:[
     {

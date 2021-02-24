@@ -1,4 +1,5 @@
 const User = require("../models/user.model");
+const bcrypt = require('bcrypt')
 
 
 async function UserHealthCheck(req, res) {
@@ -24,25 +25,29 @@ async function UserHealthCheck(req, res) {
 }
 
 async function UserRegister(req, res) {
-  console.log(req.body);
+  const saltRound = 10;
 
   try {
-    let userModel = new User(req.body);
-    await userModel.save();
-    console.log("rescode = " + res.statusCode);
-    //return res with this format if succes
+    let userObject = req.body;
+    let { userPassword } = userObject;
+    let hashedPassword = await bcrypt.hash(userPassword,saltRound);
+
+    let userModel = await new User({...userObject,userPassword: hashedPassword}).save();
+
+    //return res with this format if success
     res.setHeader('Access-Control-Allow-Origin', '*');
     return res.json({
       resCode: 1,
       msg: "success",
       payload: userModel,
     });
+
   } catch (err){
     console.log(err.message);
     let valErrors = [];
 // Object.keys(err.errors).forEach(key=>valErrors.push(err.errors[key].message));
-console.log(valErrors);
-res.setHeader('Access-Control-Allow-Origin', '*');
+    console.log(valErrors);
+    res.setHeader('Access-Control-Allow-Origin', '*');
       return res.json({
         resCode: 0,
         msg: "fail",
@@ -82,7 +87,8 @@ async function GetUser(req, res) {
           lastName: user.lastName,
           userName:user.userName,
           email: user.email,
-          createdAt: user.createdAt
+          createdAt: user.createdAt,
+          userIcon:user.userIcon
         }
         //return res with this format if succes
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -153,7 +159,37 @@ async function GetUserFavouriteList(req,res) {
 
 }
 
+async function ChangeUserIcon(req,res) {
+  const {userid , IconPath} = req.body;
+
+  let response = await User.findByIdAndUpdate(
+      userid,
+      {userIcon: IconPath},
+      { new: true}
+  ).lean()
+
+  if (response){
+    let data = {
+      _id:response._id,
+      firstName : response.firstName,
+      lastName: response.lastName,
+      userName:response.userName,
+      email: response.email,
+      createdAt: response.createdAt,
+      userIcon:response.userIcon
+    }
+
+    res.send({
+      resCode:1,
+      message:"success",
+      payload: data
+    })
+
+  }
+
+}
+
 
 
 //export module of User
-module.exports = { UserHealthCheck, UserRegister ,GetUser,AddToFavouriteList,GetUserFavouriteList};
+module.exports = { UserHealthCheck, UserRegister ,GetUser,AddToFavouriteList,GetUserFavouriteList,ChangeUserIcon};
