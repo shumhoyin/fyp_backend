@@ -1,6 +1,7 @@
 const User = require("../models/user.model");
 const bcrypt = require('bcrypt')
 
+const saltRound = 10;
 
 async function UserHealthCheck(req, res) {
   try {
@@ -25,13 +26,13 @@ async function UserHealthCheck(req, res) {
 }
 
 async function UserRegister(req, res) {
-  const saltRound = 10;
+
 
   try {
     let userObject = req.body;
     let { userPassword } = userObject;
-    let hashedPassword = await bcrypt.hash(userPassword,saltRound);
 
+    let hashedPassword = await bcrypt.hash(userPassword,saltRound);
     let userModel = await new User({...userObject,userPassword: hashedPassword}).save();
 
     //return res with this format if success
@@ -59,58 +60,49 @@ async function UserRegister(req, res) {
 //GetUser is a function for login
 //trying
 async function GetUser(req, res) {
-  const { userName, userPassword } = req.body;
-  console.log(req.body);
+  const {userName, userPassword} = req.body;
+  console.log({userName, userPassword})
 
-  try {
-    //Checking the database for the user
-    User.findOne({'userName':userName,'userPassword':userPassword},function(err,user){
 
-      //if cannot find the user
-      if(err || !user){
-        console.log("Incorrect Username or Password");
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        return res.json({
-          resCode: 0,
-          msg: "fail",
-          payload:"Incorrect Username or Password"
-        });
+  //Checking the database for the user
+  let result = await User.findOne({'userName': userName}).lean()
+  console.log(result.userPassword)
+
+  //if user found
+  if (result) {
+    //check if the password is same
+    const match = await bcrypt.compare(userPassword, result.userPassword);
+    console.log({userName, userPassword})
+    console.log(match)
+
+    if (match) {
+      console.log("登入成功！");
+
+      let data = {
+        _id: result._id,
+        firstName: result.firstName,
+        lastName: result.lastName,
+        userName: result.userName,
+        email: result.email,
+        createdAt: result.createdAt,
+        userIcon: result.userIcon
       }
-
-      //if user found
-      if (user){
-        console.log("登入成功！");
-
-        let data = {
-          _id:user._id,
-          firstName : user.firstName,
-          lastName: user.lastName,
-          userName:user.userName,
-          email: user.email,
-          createdAt: user.createdAt,
-          userIcon:user.userIcon
-        }
-        //return res with this format if succes
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        return res.json({
-          resCode: 1,
-          msg: "success",
-          payload: data,
-        });
-
-      }
-    });
-
-
-  } catch (err){
-    //related to connection error
-    console.log(err.message);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    return res.json({
-      resCode: 0,
-      msg: "fail",
-      payload:valErrors
-    });
+      //return res with this format if succes
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      return res.json({
+        resCode: 1,
+        msg: "success",
+        payload: data,
+      });
+    } else {
+      console.log("Incorrect Username or Password");
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      return res.json({
+        resCode: 0,
+        msg: "fail",
+        payload: "Incorrect Username or Password"
+      });
+    }
   }
 }
 
@@ -189,7 +181,43 @@ async function ChangeUserIcon(req,res) {
 
 }
 
+async function ChangeUserProfile(req,res){
+  console.log(req.body);
+
+  const {_id,userIcon, firstName,lastName,userName,email,newUserPassword} = req.body;
+
+
+  let userPassword = await bcrypt.hash(newUserPassword,saltRound);
+
+
+  let updatedAt = Date.now()
+
+  let Query = {userIcon, firstName,lastName,userName,email,userPassword,updatedAt}
+
+  Object.keys(Query).forEach(
+      key=>{
+        if(Query[key] === ''){
+          delete Query[key];
+        }
+      }
+  )
+
+  let response = await User.findByIdAndUpdate(
+      _id,
+      Query,
+      { new: true,select:"_id userIcon firstName lastName userName email"}
+  ).lean()
+
+  console.log(response)
+
+  res.send({
+    resCode:1,
+    message:"success",
+    payload: response
+  })
+
+}
 
 
 //export module of User
-module.exports = { UserHealthCheck, UserRegister ,GetUser,AddToFavouriteList,GetUserFavouriteList,ChangeUserIcon};
+module.exports = { UserHealthCheck, UserRegister ,GetUser,AddToFavouriteList,GetUserFavouriteList,ChangeUserIcon,ChangeUserProfile};

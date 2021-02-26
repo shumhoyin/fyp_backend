@@ -27,7 +27,6 @@ userName: {
   },
   userIcon:{
     type: String,
-    required:true,
     default: null
   },
   favouriteList:[
@@ -43,7 +42,7 @@ userName: {
   updatedAt: {
     type: Date,
     default: Date.now
-  }
+  },
 });
 
 module.exports = mongoose.model('user_infos', UserSchema);
