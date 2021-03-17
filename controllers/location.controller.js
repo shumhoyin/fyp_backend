@@ -35,19 +35,27 @@ async function ShareLocation(req,res){
         console.log(req.body)
 
     //tmp only
-    let locationInfo = req.body;
-        const {description , uploadedBy,latitude,longitude} = locationInfo;
+        let locationInfo = req.body;
+        const {description , uploadedBy,latitude,longitude,keyword,Inputkeyword} = locationInfo;
 
         console.log(locationInfo);
+        console.log(Inputkeyword)
+
+
+        let cleanedWord = Inputkeyword.split(' ');
+        let newlist = keyword.concat(cleanedWord).filter((item)=> item !== '');
 
         let cleanedFormat = {
             type: 'Point',
                 coordinates: [longitude,latitude]
         }
 
+
         delete locationInfo.description;
         delete locationInfo.latitude;
         delete locationInfo.longitude;
+        delete locationInfo.keyword;
+        delete locationInfo.Inputkeyword;
 
          let tmp1 = await new LocationDetail({
              description:description,
@@ -59,16 +67,22 @@ async function ShareLocation(req,res){
          //this is default image only
          locationInfo = {...locationInfo,
              locationDetail:tmp1._id,
-             location:cleanedFormat
+             location:cleanedFormat,
+             keyword:newlist
          }
          console.log(locationInfo);
          let result = await new Location(locationInfo).save();
-
+         console.log(result._id)
          if(result){
              res.json({
                  resCode: 1,
-                 messgae: 'success',
-                 payload: result,
+                 message: 'success',
+                 payload: result._id,
+             })
+         }else{
+             res.json({
+                 resCode: 1,
+                 message: 'fail',
              })
          }
 
@@ -78,7 +92,11 @@ async function ShareLocation(req,res){
 
 async function GetLocation(req, res) {
 
-        let {distance , type, latitude,longitude} = req.query;
+        let {distance , type, latitude,longitude,keyword} = req.query;
+
+        let checkingKeyword= keyword;
+
+        console.log(req.query)
 
 
     let Query = JSON.parse(JSON.stringify({
@@ -93,13 +111,20 @@ async function GetLocation(req, res) {
                 }
             }
         },
-        type:type
+        type:type,
+        keyword:{
+            $in: keyword
+        }
     }));
 
     Object.keys(Query).forEach(
         key=>{
             if(Query[key] === ''){
                 delete Query[key];
+            }
+
+            if(checkingKeyword ===''){
+                delete Query.keyword;
             }
         }
     )
@@ -204,11 +229,29 @@ async function GiveLike(req,res){
     // if the user already inside the  like list
     if(likeList.includes(user_id)) {
         console.log("have")
+        //return new info to frontend
+        await LocationDetail.findByIdAndUpdate(
+            detailId,
+            { $pull: { like: user_id } },
+            { new: true, useFindAndModify: false }
+        )
+
+        let updatedInfo = await LocationDetail.findById(detailId).lean()
+
+        const numOfLike = updatedInfo.like.length
+        const numOfDislike = updatedInfo.dislike.length
+
         res.json({
             resCode: 0,
-            message: "already inside like",
-            payload: "already inside like"
+            message: "Like Cancelled",
+            payload: {
+                like: numOfLike,
+                dislike: numOfDislike
+            }
         })
+
+
+
     }else{
         // if the user not inside the like list
         console.log("doesnt have")
@@ -225,7 +268,6 @@ async function GiveLike(req,res){
                 { new: true, useFindAndModify: false }
             )
 
-
             //add the name inside the like list
             await LocationDetail.findByIdAndUpdate(
                 detailId,
@@ -241,7 +283,7 @@ async function GiveLike(req,res){
 
             res.json({
                 resCode: 1,
-                message: "in dislike list and added to like list",
+                message: "Like Successful",
                 payload: {
                     like: numOfLike,
                     dislike: numOfDislike
@@ -264,7 +306,7 @@ async function GiveLike(req,res){
 
             res.json({
                 resCode: 1,
-                message: "not in dislike list and added to like list",
+                message: "Like Successful",
                 payload: {
                     like: numOfLike,
                     dislike:numOfDislike
@@ -287,19 +329,36 @@ async function GiveDislike(req,res){
     let likeList = result.like;
     let dislikeList = result.dislike;
 
-    // if the user already inside the  like list
+    // if the user already inside the  dislike list
     if(dislikeList.includes(user_id)) {
         console.log("have")
+
+        await LocationDetail.findByIdAndUpdate(
+            detailId,
+            { $pull: { dislike: user_id } },
+            { new: true, useFindAndModify: false }
+        )
+
+        //return new info to frontend
+        let updatedInfo = await LocationDetail.findById(detailId).lean()
+
+        const numOfLike = updatedInfo.like.length
+        const numOfDislike = updatedInfo.dislike.length
+
         res.json({
             resCode: 0,
-            message: "already inside dislike list",
-            payload: "already inside dislike list"
+            message: "Dislike Cancelled",
+            payload: {
+                like: numOfLike,
+                dislike:numOfDislike
+            }
         })
+
     }else{
         // if the user not inside the dislike list
         console.log("doesnt have")
 
-        //if user is inside the dislike list --> 1) remove the name inside the dislike list and 2) add to like list
+        //if user is inside the like list --> 1) remove the name inside the dislike list and 2) add to like list
         //else
         //1) add to like list
 
@@ -327,7 +386,7 @@ async function GiveDislike(req,res){
 
             res.json({
                 resCode: 1,
-                message: "in like list and added to dislike list",
+                message: "Dislike Successful",
                 payload: {
                     like: numOfLike,
                     dislike: numOfDislike
@@ -350,7 +409,7 @@ async function GiveDislike(req,res){
 
             res.json({
                 resCode: 1,
-                message: "not in dislike list and added to dislike list",
+                message: "Dislike Successful",
                 payload: {
                     like: numOfLike,
                     dislike:numOfDislike
@@ -364,5 +423,46 @@ async function GiveDislike(req,res){
 
 }
 
+async function GetKeyword(req,res){
+    console.log(req.query)
+    let request = req.query
+    const { latitude ,longitude } = request
+
+
+
+    let result  = await Location.find({
+        location:{
+            $near:{
+                //maxdistance is in "meter"
+                $maxDistance: 1000,
+                $geometry:{
+                    type:'Point',
+                    //this is the user location
+                    coordinates: [longitude,latitude]
+                }
+            }
+        }
+    }).select('-_id keyword').lean()
+
+
+    let tmpArr = [] ;
+
+    result.reduce((acc,cur)=>{
+        let processArr = cur.keyword
+        for (let i = 0 ; i < processArr.length;i++){
+            if(!tmpArr.includes(processArr[i])){
+                tmpArr.push(processArr[i])
+            }
+        }
+    },[])
+
+    console.log(tmpArr)
+
+    res.json({
+        resCode: 1,
+        payload: tmpArr
+    })
+}
+
 //export module of Location
-module.exports = { GetDetail,GiveComment,LocationHealthCheck,GetLocation,ShareLocation, GiveLike, GiveDislike};
+module.exports = { GetDetail,GiveComment,LocationHealthCheck,GetLocation,ShareLocation, GiveLike, GiveDislike,GetKeyword};

@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors')
 const ConnectDB = require('./DBConnection');
+const errorController = require('./controllers/errorController')
 
 //route shortcut
 const Router = require('./routes/index.route');

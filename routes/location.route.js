@@ -13,6 +13,7 @@ router.route('/GiveComment').post(asyncHandler(LocationController.GiveComment));
 router.route('/GetDetail').get(asyncHandler(LocationController.GetDetail));
 router.route('/GiveLike').post(asyncHandler(LocationController.GiveLike));
 router.route('/GiveDislike').post(asyncHandler(LocationController.GiveDislike));
+router.route('/GetKeyword').get(asyncHandler(LocationController.GetKeyword))
 
 
 

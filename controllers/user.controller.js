@@ -1,7 +1,6 @@
 const User = require("../models/user.model");
 const bcrypt = require('bcrypt')
-
-const saltRound = 10;
+var saltRound = 10;
 
 async function UserHealthCheck(req, res) {
   try {
@@ -39,22 +38,35 @@ async function UserRegister(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     return res.json({
       resCode: 1,
-      msg: "success",
+      msg: "Register Success",
       payload: userModel,
     });
 
   } catch (err){
-    console.log(err.message);
-    let valErrors = [];
-// Object.keys(err.errors).forEach(key=>valErrors.push(err.errors[key].message));
-    console.log(valErrors);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-      return res.json({
-        resCode: 0,
-        msg: "fail",
-        payload:valErrors
-      });
+    //handle 2 kinds of error
+    if(err.name === 'ValidationError') return err = handleValidationError(err, res);
+    if(err.code && err.code == 11000) return err = handleDuplicateKeyError(err, res);
   }
+}
+
+//handle email or usename duplicates
+const handleDuplicateKeyError = (err, res) => {
+  const field = Object.keys(err.keyValue);
+  const error = `An account with that ${field} already exists.`;
+  res.send({resCode:0 , msg: error,payload:'' });
+}
+//handle field formatting, empty fields, and mismatched passwords
+const handleValidationError = (err, res) => {
+  let errors = Object.values(err.errors).map(el => el.message);
+  let fields = Object.values(err.errors).map(el => el.path);
+  if (errors.length > 1) {
+    const formattedErrors = errors.join('\n');
+    res.send({resCode:0,msg: formattedErrors, payload: fields});
+    } else {
+    const formattedErrors = errors.join('');
+    res.send({resCode:0,msg: formattedErrors, payload: fields})
+    }
+
 }
 
 //GetUser is a function for login
@@ -66,8 +78,6 @@ async function GetUser(req, res) {
 
   //Checking the database for the user
   let result = await User.findOne({'userName': userName}).lean()
-  console.log(result.userPassword)
-
   //if user found
   if (result) {
     //check if the password is same
@@ -77,7 +87,6 @@ async function GetUser(req, res) {
 
     if (match) {
       console.log("登入成功！");
-
       let data = {
         _id: result._id,
         firstName: result.firstName,
@@ -103,6 +112,14 @@ async function GetUser(req, res) {
         payload: "Incorrect Username or Password"
       });
     }
+  }else{
+    console.log("Incorrect Username or Password");
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.json({
+      resCode: 0,
+      msg: "Incorrect Username or Password",
+      payload: ""
+    });
   }
 }
 
@@ -186,35 +203,68 @@ async function ChangeUserProfile(req,res){
 
   const {_id,userIcon, firstName,lastName,userName,email,newUserPassword} = req.body;
 
+  if(newUserPassword !== undefined || newUserPassword === '' ){
+      let userPassword = await bcrypt.hash(newUserPassword,saltRound);
+      let updatedAt = Date.now()
 
-  let userPassword = await bcrypt.hash(newUserPassword,saltRound);
+      let Query = {userIcon, firstName,lastName,userName,email,userPassword,updatedAt}
+
+      Object.keys(Query).forEach(
+          key=>{
+            if(Query[key] === ''){
+              delete Query[key];
+            }
+          }
+      )
+
+      let response = await User.findByIdAndUpdate(
+          _id,
+          Query,
+          { new: true,select:"_id userIcon firstName lastName userName email"}
+      ).lean()
+
+      console.log(response)
+
+      res.send({
+        resCode:1,
+        message:"success",
+        payload: response
+      })
 
 
-  let updatedAt = Date.now()
+  }else{
 
-  let Query = {userIcon, firstName,lastName,userName,email,userPassword,updatedAt}
+    //change without password
 
-  Object.keys(Query).forEach(
-      key=>{
-        if(Query[key] === ''){
-          delete Query[key];
-        }
-      }
-  )
+      let updatedAt = Date.now()
 
-  let response = await User.findByIdAndUpdate(
-      _id,
-      Query,
-      { new: true,select:"_id userIcon firstName lastName userName email"}
-  ).lean()
+      let Query = {userIcon, firstName,lastName,userName,email,updatedAt}
 
-  console.log(response)
+      Object.keys(Query).forEach(
+          key=>{
+            if(Query[key] === ''){
+              delete Query[key];
+            }
+          }
+      )
 
-  res.send({
-    resCode:1,
-    message:"success",
-    payload: response
-  })
+      let response = await User.findByIdAndUpdate(
+          _id,
+          Query,
+          { new: true,useFindAndModify:true,select:"_id userIcon firstName lastName userName email"}
+      ).lean()
+
+      console.log(response)
+
+      res.send({
+        resCode:1,
+        message:"success",
+        payload: response
+      })
+
+  }
+
+
 
 }
 

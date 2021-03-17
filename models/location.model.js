@@ -36,6 +36,9 @@ const LocationSchema = new mongoose.Schema({
         required: true
 
     },
+    keyword:{
+        type:Array
+    },
     locationDetail:{
         type: mongoose.Schema.Types.ObjectID,
         ref:'location_details',
